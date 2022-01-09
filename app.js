@@ -47,7 +47,7 @@ let bodyParser = require('body-parser')
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}))
 
-const dbURI = '<mongoDB connection URL>'
+const dbURI = '<connection url>'
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((result) => console.log('connected to db'))
   .catch((err) => console.log(err))
@@ -596,7 +596,9 @@ app.post('/login', (req, res) => {
       if (result.length > 0) {
         const accessToken = generateAccessToken({ 
           id: result[0]._id,
+          username: result[0].username,
           firstName: result[0].firstName,
+          lastName: result[0].lastName
          })
         const refreshToken = generateRefreshToken({ 
           id: result[0]._id,
@@ -619,6 +621,39 @@ app.post('/login', (req, res) => {
       res.send({
         successfullyLogged: false
       })
+    })
+})
+
+app.post('/register', (req, res) => {
+  
+  const firstName = req.body.firstName
+  const lastName = req.body.lastName
+  const username = req.body.username
+  const password = crypto.createHash('md5').update(req.body.password).digest('hex') 
+
+  const User = new Users({
+    username,
+    password,
+    firstName,
+    lastName
+  })
+  User.save()
+    .then((result) => {
+      console.log(result)
+      const accessToken = generateAccessToken({ 
+        id: result._id,
+        username: result.username,
+        firstName: result.firstName,
+        lastName: result.lastName
+       })
+      res.send({
+        successfullyRegistered: true,
+        user: result,
+        accessToken: accessToken
+      })
+    })
+    .catch((err) => {
+      console.log(err)
     })
 })
 
@@ -651,6 +686,8 @@ app.post("/logout", (req,res)=>{
   res.status(204).send("Logged out!")
 })
 
-http.listen(3500, function(){
-  console.log('listening on *:3500')
+const PORT = process.env.PORT || 5000
+
+http.listen(PORT, function(){
+  console.log(`listening on *:${PORT}`)
 })
