@@ -20,7 +20,7 @@ const swaggerOptions = {
   swaggerDefinition: {
     info: {
       title: 'Kar RESTful API',
-      description: 'API description',
+      description: 'This is the server of a simple quiz application.',
       contact: {
         name: 'contact name'
       },
@@ -92,6 +92,8 @@ app.get('/add-quiz', (req, res) => {
  * /all-questions:
  *   post:
  *     summary: Return all questions of the selected quiz.
+ *     tags:
+ *       - quiz
  *     consumes:
  *       - application/json
  *     parameters:
@@ -167,6 +169,8 @@ app.post('/all-questions', (req, res) => {
  * /all-corrected-questions:
  *   post:
  *     summary: Return all questions of the selected corrected quiz.
+ *     tags:
+ *       - quiz
  *     consumes:
  *       - application/json
  *     parameters:
@@ -289,6 +293,8 @@ const QuizCorrection = (result) => {
  * /add-quiz-corrected:
  *   put:
  *     summary: Save quiz (with user answers) in the DB.
+ *     tags:
+ *       - quiz
  *     consumes:
  *       - application/json
  *     parameters:
@@ -416,6 +422,8 @@ app.put('/add-quiz-corrected', (req, res) => {
  * /corrected-quiz-list/{limit}:
  *   get:
  *     summary: Return last corrected quizzes.
+ *     tags:
+ *       - quiz
  *     consumes:
  *       - application/json
  *     parameters:
@@ -584,6 +592,45 @@ app.get('/add-user', (req, res) => {
     })
 })
 
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     summary: Connect user to the website.
+ *     tags:
+ *       - user
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         description: Credentials of user to login.
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             email:
+ *               type: string
+ *               description: Email from user input.
+ *             password:
+ *               type: string
+ *               description: Password from user input.
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *         schema:
+ *           type: object
+ *           required: 
+ *             - successfullyLogged
+ *           properties:
+ *             successfullyLogged:
+ *               type: boolean
+ *               description: Is user successfully logged in.
+ *             accessToken:
+ *               type: string
+ *               description: Token of the current session.
+ *        
+ */
 app.post('/login', (req, res) => {
   
   const username = req.body.username
@@ -624,6 +671,56 @@ app.post('/login', (req, res) => {
     })
 })
 
+/**
+ * @swagger
+ * /register:
+ *   post:
+ *     summary: User to register on the DB.
+ *     tags:
+ *       - user
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         description: Credentials of user to register.
+ *         required: true
+ *         schema:
+ *           type: object
+ *           required:
+ *             - firstName
+ *             - lastName
+ *             - email
+ *             - password
+ *           properties:
+ *             firstName:
+ *               type: string
+ *               description: First name from user input.
+ *             lastName:
+ *               type: string
+ *               description: Last name from user input.
+ *             email:
+ *               type: string
+ *               description: Email from user input.
+ *             password:
+ *               type: string
+ *               description: Password from user input.
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *         schema:
+ *           type: object
+ *           required: 
+ *             - successfullyRegistered
+ *           properties:
+ *             successfullyRegistered:
+ *               type: boolean
+ *               description: Is user successfully registered.
+ *             accessToken:
+ *               type: string
+ *               description: Token of the current session.
+ *        
+ */
 app.post('/register', (req, res) => {
   
   const firstName = req.body.firstName
@@ -678,12 +775,72 @@ app.post("/refreshToken", (req,res) => {
   res.json({accessToken: accessToken, refreshToken: refreshToken})
 })
 
-app.get("/posts", validateToken, (req, res)=>{
-  res.send(req.user)
+/**
+ * @swagger
+ * /loginCheck:
+ *   get:
+ *     summary: Check if user is logged.
+ *     tags:
+ *       - user
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: header
+ *         name: authorization
+ *         description: An authorization header containing the user's token.
+ *     responses:
+ *       200:
+ *         description: Token is valid.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             successfullyRegistered:
+ *               type: boolean
+ *               description: Is user successfully registered.
+ *             id:
+ *               type: string
+ *             firstName:
+ *               type: string
+ *             lastName:
+ *               type: string
+ *             username:
+ *               type: string
+ *             exp:
+ *               type: number
+ *       401:
+ *         description: Token is not valid.
+ *        
+ */
+app.get("/loginCheck", validateToken, (req, res)=>{
+  res.status(200).send(req.user)
 })
 
-app.post("/logout", (req,res)=>{
-  res.status(204).send("Logged out!")
+/**
+ * @swagger
+ * /logout:
+ *   delete:
+ *     summary: User to disconnect.
+ *     tags:
+ *       - user
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         description: Token of the current user's session.
+ *         schema:
+ *           type: object
+ *           properties:
+ *             userToken:
+ *               type: string
+ *               description: Token of the current user's session.
+ *     responses:
+ *       204:
+ *         description: Successfully logged out
+ *        
+ */
+app.delete("/logout", (req,res)=>{
+  res.status(204).send("Successfully logged out")
 })
 
 const PORT = process.env.PORT || 5000
