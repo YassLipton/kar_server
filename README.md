@@ -2,6 +2,8 @@
 
 Here is the server of the quiz applications.
 
+The documentation for this API is available [here](https://secure-cove-32923.herokuapp.com/api-docs/).
+
 ## stack
 
 - Node
